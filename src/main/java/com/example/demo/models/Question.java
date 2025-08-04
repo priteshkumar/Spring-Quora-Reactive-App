@@ -1,10 +1,13 @@
 package com.example.demo.models;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.NotBlank;
@@ -17,24 +20,23 @@ import lombok.*;
 @AllArgsConstructor
 @Document(collection = "questions")
 public class Question {
-    
-    @Id
-    private String id;
 
-    @NotBlank(message = "Title is required")
-    @Size(min = 10, max = 100, message = "Title must be between 10 and 100 characters")
-    private String title;
+  @Id private String id;
 
-    @NotBlank(message = "Content is required")
-    @Size(min = 10, max = 1000, message = "Content must be between 10 and 1000 characters")
-    private String content;
- 
-    @CreatedDate
-    private LocalDateTime createdAt;
+  @NotBlank(message = "Title is required")
+  @Size(min = 10, max = 100, message = "Title must be between 10 and 100 characters")
+  private String title;
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+  @NotBlank(message = "Content is required")
+  @Size(min = 10, max = 1000, message = "Content must be between 10 and 1000 characters")
+  private String content;
+
+  @CreatedDate private LocalDateTime createdAt;
+
+  @LastModifiedDate private LocalDateTime updatedAt;
+
+  @DBRef(lazy = true)
+  private List<Tag> tags = new ArrayList<>();
 }
-
 
 // Question has many tags, one tag can have many questions
