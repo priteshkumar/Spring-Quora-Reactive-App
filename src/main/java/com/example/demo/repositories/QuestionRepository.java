@@ -1,6 +1,7 @@
 package com.example.demo.repositories;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
@@ -17,8 +18,8 @@ import java.util.List;
 public interface QuestionRepository extends ReactiveMongoRepository<Question, String> {
 
   /*@Query(
-      "{ '$or': [ { 'title': { $regex: ?0, $options: 'i'} }, { "
-          + "'content' : { $regex: ?0, $options: 'i' } } ] }")*/
+  "{ '$or': [ { 'title': { $regex: ?0, $options: 'i'} }, { "
+      + "'content' : { $regex: ?0, $options: 'i' } } ] }")*/
   @Query("{ $text: { $search: ?0 } }")
   Flux<Question> findByTitleOrContentContainingIgnoreCase(String searchTerm, Pageable pageable);
 
@@ -27,4 +28,5 @@ public interface QuestionRepository extends ReactiveMongoRepository<Question, St
 
   Flux<Question> findTop10ByOrderByCreatedAtAsc();
 
+  Flux<Question> findAllBy(TextCriteria textCriteria, Pageable pageable);
 }

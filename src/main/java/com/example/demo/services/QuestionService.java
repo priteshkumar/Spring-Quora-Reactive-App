@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.adapter.QuestionAdapter;
@@ -63,6 +64,14 @@ public class QuestionService implements IQuestionService {
         .map(QuestionAdapter::toQuestionResponseDTO)
         .doOnError(error -> System.out.println("Error searching questions: " + error))
         .doOnComplete(() -> System.out.println("Questions searched successfully"));
+
+    /*TextCriteria criteria =
+            TextCriteria.forDefaultLanguage().matching(searchTerm);
+    return questionRepository
+        .findAllBy(criteria, PageRequest.of(offset, page))
+        .map(QuestionAdapter::toQuestionResponseDTO)
+        .doOnError(error -> System.out.println("error searching " + error))
+        .doOnComplete(() -> System.out.println("question searched"));*/
   }
 
   @Override
