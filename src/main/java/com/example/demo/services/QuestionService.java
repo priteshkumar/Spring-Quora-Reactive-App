@@ -21,49 +21,68 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class QuestionService implements IQuestionService {
 
-    private final QuestionRepository questionRepository;
-    
-    @Override
-    public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
+  private final QuestionRepository questionRepository;
 
-        Question question = Question.builder()
+  @Override
+  public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
+
+    Question question =
+        Question.builder()
             .title(questionRequestDTO.getTitle())
             .content(questionRequestDTO.getContent())
             .createdAt(LocalDateTime.now())
             .updatedAt(LocalDateTime.now())
             .build();
 
-        return questionRepository.save(question)
+    return questionRepository
+        .save(question)
         .map(QuestionAdapter::toQuestionResponseDTO)
         .doOnSuccess(response -> System.out.println("Question created successfully: " + response))
         .doOnError(error -> System.out.println("Error creating question: " + error));
-    }
+  }
 
-    @Override
-    public Flux<QuestionResponseDTO> searchQuestions(String searchTerm, int offset, int page) {
-        return questionRepository.findByTitleOrContentContainingIgnoreCase(searchTerm, PageRequest.of(offset, page))
+  public Mono<QuestionResponseDTO> getQuestionById(String id) {
+    return questionRepository
+        .findById(id)
+        .map(QuestionAdapter::toQuestionResponseDTO)
+        .doOnSuccess(response -> System.out.println("question with id: " + id + " " + response))
+        .doOnError(error -> System.out.println("cant find question"));
+  }
+
+  public Mono<Void> deleteQuestionById(String id) {
+    return questionRepository
+        .deleteById(id)
+        .doOnSuccess((val) -> System.out.println("deleted " + id))
+        .doOnError(error -> System.out.println("error deleting question " + error));
+  }
+
+  @Override
+  public Flux<QuestionResponseDTO> searchQuestions(String searchTerm, int offset, int page) {
+    return questionRepository
+        .findByTitleOrContentContainingIgnoreCase(searchTerm, PageRequest.of(offset, page))
         .map(QuestionAdapter::toQuestionResponseDTO)
         .doOnError(error -> System.out.println("Error searching questions: " + error))
         .doOnComplete(() -> System.out.println("Questions searched successfully"));
+  }
+
+  @Override
+  public Flux<QuestionResponseDTO> getAllQuestions(String cursor, int size) {
+    Pageable pageable = PageRequest.of(0, size);
+
+    if (!CursorUtils.isValidCursor(cursor)) {
+      return questionRepository
+          .findTop10ByOrderByCreatedAtAsc()
+          .take(size)
+          .map(QuestionAdapter::toQuestionResponseDTO)
+          .doOnError(error -> System.out.println("Error fetching questions: " + error))
+          .doOnComplete(() -> System.out.println("Questions fetched successfully"));
+    } else {
+      LocalDateTime cursorTimeStamp = CursorUtils.parseCursor(cursor);
+      return questionRepository
+          .findByCreatedAtGreaterThanOrderByCreatedAtAsc(cursorTimeStamp, pageable)
+          .map(QuestionAdapter::toQuestionResponseDTO)
+          .doOnError(error -> System.out.println("Error fetching questions: " + error))
+          .doOnComplete(() -> System.out.println("Questions fetched successfully"));
     }
-
-    @Override
-    public Flux<QuestionResponseDTO> getAllQuestions(String cursor, int size) {
-        Pageable pageable = PageRequest.of(0, size);
-
-        if(!CursorUtils.isValidCursor(cursor)) {
-            return questionRepository.findTop10ByOrderByCreatedAtAsc()
-            .take(size)
-            .map(QuestionAdapter::toQuestionResponseDTO)
-            .doOnError(error -> System.out.println("Error fetching questions: " + error))
-            .doOnComplete(() -> System.out.println("Questions fetched successfully"));
-        } else {
-            LocalDateTime cursorTimeStamp = CursorUtils.parseCursor(cursor);
-            return questionRepository.findByCreatedAtGreaterThanOrderByCreatedAtAsc(cursorTimeStamp, pageable)
-            .map(QuestionAdapter::toQuestionResponseDTO)
-            .doOnError(error -> System.out.println("Error fetching questions: " + error))
-            .doOnComplete(() -> System.out.println("Questions fetched successfully"));
-        }
-
-    }
+  }
 }
