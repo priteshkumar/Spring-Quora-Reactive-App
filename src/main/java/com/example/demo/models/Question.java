@@ -36,6 +36,7 @@ public class Question {
   @LastModifiedDate private LocalDateTime updatedAt;
 
   @DBRef(lazy = true)
+  @Builder.Default
   private List<Tag> tags = new ArrayList<>();
 }
 

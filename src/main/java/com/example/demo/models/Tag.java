@@ -30,5 +30,6 @@ public class Tag {
   @CreatedDate private LocalDateTime createdAt;
 
   @DBRef(lazy = true)
+  @Builder.Default
   private List<Question> questions = new ArrayList<>();
 }
