@@ -2,9 +2,10 @@ package com.example.demo.services;
 
 import java.time.LocalDateTime;
 
+import com.example.demo.models.Tag;
+import com.example.demo.repositories.TagRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.adapter.QuestionAdapter;
@@ -23,6 +24,7 @@ import reactor.core.publisher.Mono;
 public class QuestionService implements IQuestionService {
 
   private final QuestionRepository questionRepository;
+  private final TagRepository tagRepository;
 
   @Override
   public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
@@ -93,5 +95,33 @@ public class QuestionService implements IQuestionService {
           .doOnError(error -> System.out.println("Error fetching questions: " + error))
           .doOnComplete(() -> System.out.println("Questions fetched successfully"));
     }
+  }
+
+  @Override
+  public Mono<QuestionResponseDTO> addTag(String questionId, String tagId) {
+
+    Mono<QuestionResponseDTO> questionResponseDTOMono =
+        Mono.zip(questionRepository.findById(questionId), tagRepository.findById(tagId))
+            .flatMap(
+                result -> {
+                  Question question = result.getT1();
+                  Tag tag = result.getT2();
+                  question.getTags().add(tag.getId());
+                  tag.getQuestions().add(question.getId());
+                  return Mono.zip(questionRepository.save(question),
+                          tagRepository.save(tag));
+                })
+            .map(result -> QuestionAdapter.toQuestionResponseDTO(result.getT1()));
+
+    return questionResponseDTOMono;
+  }
+
+  @Override
+  public Flux<QuestionResponseDTO> getQuestionsByTag(String tagId, int offset,
+                                                     int page) {
+    return questionRepository.findByTag(tagId,PageRequest.of(offset,page))
+            .map(QuestionAdapter::toQuestionResponseDTO)
+            .doOnComplete(() -> System.out.println("questions fetched by tag " + tagId))
+            .doOnError(error -> System.out.println(error));
   }
 }

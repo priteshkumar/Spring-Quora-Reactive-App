@@ -9,7 +9,7 @@ public class TagAdapter {
         .id(tag.getId())
         .name(tag.getName())
         .createdAt(tag.getCreatedAt())
-        .questions(tag.getQuestions())
+        /*.questions(tag.getQuestions())*/
         .build();
   }
 }

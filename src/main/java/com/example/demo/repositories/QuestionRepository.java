@@ -29,4 +29,7 @@ public interface QuestionRepository extends ReactiveMongoRepository<Question, St
   Flux<Question> findTop10ByOrderByCreatedAtAsc();
 
   Flux<Question> findAllBy(TextCriteria textCriteria, Pageable pageable);
+
+  @Query("{tags:?0}")
+  Flux<Question> findByTag(String tag, Pageable pageable);
 }

@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Data
 @Builder
@@ -35,9 +36,8 @@ public class Question {
 
   @LastModifiedDate private LocalDateTime updatedAt;
 
-  @DBRef(lazy = true)
   @Builder.Default
-  private List<Tag> tags = new ArrayList<>();
+  private List<String> tags = new ArrayList<>();
 }
 
 // Question has many tags, one tag can have many questions

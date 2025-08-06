@@ -1,7 +1,8 @@
 package com.example.demo.controllers;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.demo.models.Question;
+import com.example.demo.models.Tag;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.QuestionRequestDTO;
 import com.example.demo.dto.QuestionResponseDTO;
@@ -10,13 +11,7 @@ import com.example.demo.services.IQuestionService;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import reactor.util.function.Tuple2;
 
 @RequiredArgsConstructor
 @RestController
@@ -72,7 +67,15 @@ public class QuestionController {
       @PathVariable String tag,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
-    throw new UnsupportedOperationException("Not implemented");
+    return questionService.getQuestionsByTag(tag,page,size);
   }
 
+  @PutMapping("/{id}/tag/{tag}")
+  public Mono<QuestionResponseDTO> addTag(@PathVariable String id,
+                                @PathVariable String tag) {
+    return questionService
+        .addTag(id, tag)
+        .doOnSuccess(response -> System.out.println(response))
+        .doOnError(error -> System.out.println(error));
+  }
 }

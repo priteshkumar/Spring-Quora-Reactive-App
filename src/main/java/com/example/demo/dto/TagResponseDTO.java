@@ -17,5 +17,5 @@ public class TagResponseDTO {
   private String id;
   private String name;
   private LocalDateTime createdAt;
-  private List<Question> questions;
+
 }
