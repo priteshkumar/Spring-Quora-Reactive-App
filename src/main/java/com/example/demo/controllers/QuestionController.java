@@ -2,6 +2,7 @@ package com.example.demo.controllers;
 
 import com.example.demo.models.Question;
 import com.example.demo.models.Tag;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.QuestionRequestDTO;
@@ -63,7 +64,7 @@ public class QuestionController {
   }
 
   @GetMapping("/tag/{tag}")
-  public Flux<QuestionResponseDTO> getQuestionsByTag(
+  public Mono<PageImpl<QuestionResponseDTO>> getQuestionsByTag(
       @PathVariable String tag,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {

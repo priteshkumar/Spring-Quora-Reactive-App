@@ -32,4 +32,7 @@ public interface QuestionRepository extends ReactiveMongoRepository<Question, St
 
   @Query("{tags:?0}")
   Flux<Question> findByTag(String tag, Pageable pageable);
+
+  @Query(value="{tags:?0}",count = true)
+  Mono<Long> countByTag(String tag);
 }

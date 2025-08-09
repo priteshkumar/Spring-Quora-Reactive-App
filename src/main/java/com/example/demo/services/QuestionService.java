@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.example.demo.models.Tag;
 import com.example.demo.repositories.TagRepository;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -117,11 +118,18 @@ public class QuestionService implements IQuestionService {
   }
 
   @Override
-  public Flux<QuestionResponseDTO> getQuestionsByTag(String tagId, int offset,
-                                                     int page) {
+  public Mono<PageImpl<QuestionResponseDTO>> getQuestionsByTag(String tagId, int offset,
+                                                               int page) {
     return questionRepository.findByTag(tagId,PageRequest.of(offset,page))
             .map(QuestionAdapter::toQuestionResponseDTO)
-            .doOnComplete(() -> System.out.println("questions fetched by tag " + tagId))
+            .collectList()
+            .zipWith(questionRepository.countByTag(tagId)/*Mono.just(4)*/)
+            .map(result -> {
+             return new PageImpl<>(result.getT1(),PageRequest.of(offset,page),
+                      result.getT2());
+            })
+            .doOnSuccess((response) -> System.out.println("questions fetched " +
+                    "by tag " + tagId))
             .doOnError(error -> System.out.println(error));
   }
 }
