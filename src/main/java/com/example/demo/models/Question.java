@@ -32,12 +32,12 @@ public class Question {
   @Size(min = 10, max = 1000, message = "Content must be between 10 and 1000 characters")
   private String content;
 
+  private Integer viewCount;
   @CreatedDate private LocalDateTime createdAt;
 
   @LastModifiedDate private LocalDateTime updatedAt;
 
-  @Builder.Default
-  private List<String> tags = new ArrayList<>();
+  @Builder.Default private List<String> tags = new ArrayList<>();
 }
 
 // Question has many tags, one tag can have many questions
