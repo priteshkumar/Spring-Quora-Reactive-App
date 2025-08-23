@@ -1,10 +1,13 @@
 package com.example.demo.services;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.demo.events.ViewCountEvent;
+import com.example.demo.models.QuestionElasticDocument;
 import com.example.demo.models.Tag;
 import com.example.demo.producers.KafkaEventProducer;
+import com.example.demo.repositories.QuestionDocumentRepository;
 import com.example.demo.repositories.TagRepository;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +32,8 @@ public class QuestionService implements IQuestionService {
   private final QuestionRepository questionRepository;
   private final TagRepository tagRepository;
   private final KafkaEventProducer kafkaEventProducer;
+  private final IQuestionIndexService questionIndexService;
+  private final QuestionDocumentRepository questionDocumentRepository;
 
   @Override
   public Mono<QuestionResponseDTO> createQuestion(QuestionRequestDTO questionRequestDTO) {
@@ -43,7 +48,12 @@ public class QuestionService implements IQuestionService {
 
     return questionRepository
         .save(question)
-        .map(QuestionAdapter::toQuestionResponseDTO)
+        // .map(QuestionAdapter::toQuestionResponseDTO)
+        .map(
+            savedQuestion -> {
+              questionIndexService.createQuestionIndex(savedQuestion);
+              return QuestionAdapter.toQuestionResponseDTO(savedQuestion);
+            })
         .doOnSuccess(response -> System.out.println("Question created successfully: " + response))
         .doOnError(error -> System.out.println("Error creating question: " + error));
   }
@@ -138,5 +148,9 @@ public class QuestionService implements IQuestionService {
             })
         .doOnSuccess((response) -> System.out.println("questions fetched " + "by tag " + tagId))
         .doOnError(error -> System.out.println(error));
+  }
+
+  public List<QuestionElasticDocument> searchQuestionsinElasticsearch(String query) {
+    return questionDocumentRepository.findByTitleContainingOrContentContaining(query,query);
   }
 }
